@@ -1,0 +1,1 @@
+The client of a django trivia app. This client will include a way to join rooms, authentication, and socket state management. Is being made to allow independent developers more quickly develop room/socket applications.
