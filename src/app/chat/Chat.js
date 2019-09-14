@@ -41,9 +41,10 @@ class Chat extends Component {
 			this.props.socket.instance.send(
 				JSON.stringify({
 					'type':'UPDATE_CHAT', 
+					'room_id': this.props.room_id,
 					'data':{
-						'message':this.state.input, 
-						'room_id': this.props.room_id
+						'message':this.state.input 
+						
 					}
 				})
 				);

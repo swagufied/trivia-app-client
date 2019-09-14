@@ -9,7 +9,7 @@ export const actionsTypes = {
 };
 
 export default {
-	authenticatedUser: createAction(actionsTypes.AUTHENTICATED_USER),
+	authenticateUser: createAction(actionsTypes.AUTHENTICATED_USER),
 	authenticatingUser: createAction(actionsTypes.AUTHENTICATING_USER),
 	error: createAction(actionsTypes.AUTHENTICATION_ERROR),
 	refresh: createAction(actionsTypes.REFRESH_STATE),

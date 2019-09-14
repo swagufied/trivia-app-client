@@ -4,17 +4,25 @@ import {baseUrl, accessKey, refreshKey} from "../config";
 import AuthToken from '../../utils/tokenManagement'
 import { connect } from 'react-redux';
 
+import {authenticateUser} from '../../redux/auth'
+import {Redirect, Route} from 'react-router';
+
+
+const errorStyle = {
+  color: "red"
+};
 
 class Login extends Component {
 
 	constructor(props){
 		super(props)
 
-		// console.log(this.props)
+		console.log('login', this.props)
 		this.state = {
 			username:"",
-			errors:"",
-			// password:""
+			password:'party123',
+			error:"",
+			redirect: false
 		}
 		this.login = this.login.bind(this);
 		this.handleChange = this.handleChange.bind(this);
@@ -29,44 +37,36 @@ class Login extends Component {
 	login(event){
 		console.log('LOGGING IN')
 
-		const this_ = this;
 
-		axios.post(baseUrl + 'api/token/', {
-			username:this.state.username, 
-			password:'party123'
-		}).then(response => {
-
-				AuthToken.set(accessKey, response.data.access)
-				AuthToken.set(refreshKey, response.data.refresh)
-				this_.props.history.push('/trivia/room/1')
-			
-			
+		
+		AuthToken.request(this.state.username, this.state.password, this.props.dispatch)
+		.then(response => {
+			this.setState({redirect: true});
 		}).catch(error => {
-
-			if (error.response.status == 401){
-				this_.setState({errors: 'incorrect username or password'});
-			} else {
-				this_.setState({errors: 'an unknown problem occurred'});
-			}
-			
+			this.setState({error: error});
 		});
+
 		event.preventDefault();
 	}
 
 	render(){
-		const {errors} = this.state;
+		const {error, redirect} = this.state;
+		let { from } = this.props.location.state || { from: { pathname: "/" } };
 
-			return (
-				<div>
-					<h1>LOGIN</h1>
-					<p>{errors}</p>
-					<form onSubmit={this.login}>
-						username: <input type="text" name="username" onChange={this.handleChange} />
-						<button type="submit">login</button>
-					</form>
-					<a href="/register">don't have an account?</a>
-				</div>
-			);
+
+    	if (redirect) return <Redirect to={from} />;
+
+		return (
+			<div>
+				<h1>LOGIN</h1>
+				<p style={errorStyle}>{error}</p>
+				<form onSubmit={this.login}>
+					username: <input type="text" name="username" onChange={this.handleChange} />
+					<button type="submit">login</button>
+				</form>
+				<a href="/register">Don't have an account?</a>
+			</div>
+		);
 		
 		
 		 
@@ -75,7 +75,7 @@ class Login extends Component {
 
 const mapStoreToProps = store => store;
 const mapDispatchToProps = dispatch => ({
-    // setUser: setUser(dispatch)
+    dispatch: dispatch
 });
 
 export default connect(mapStoreToProps, mapDispatchToProps)(Login);

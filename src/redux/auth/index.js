@@ -17,10 +17,16 @@ export default dispatch => () => {
 	}).catch(error => {
 		console.log('token verify error catch', error);
 		dispatch(actions.error(error))
-	});
+	});	
 
 
 }
+
+const authenticateUser = dispatch => () => {
+	dispatch(actions.authenticatedUser());
+	console.log('sss')
+}
+
 
 
 const refreshAuth = dispatch => () => {
@@ -34,5 +40,6 @@ const setUser = dispatch => (user) => {
 }
 
 export {
-	refreshAuth
+	refreshAuth,
+	authenticateUser
 }

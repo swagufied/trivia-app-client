@@ -18,7 +18,7 @@ class Game extends Component {
 		this.state = {
 			players:[],
 			gameState: 'WAITING',
-			isHost: true
+			isHost: false
 		}
 
 
@@ -34,7 +34,7 @@ class Game extends Component {
 	}
 
 	componentDidUpdate(prevProps){
-
+		console.log(this.props)
 		if ( this.props.socket.type == 'UPDATE_GAME' && (prevProps.socket.type != 'UPDATE_GAME' || !isMapsEqual(this.props.socket.message, prevProps.socket.message) )){
 			this.updateRoom(this.props.socket.message);
 		}
@@ -42,17 +42,31 @@ class Game extends Component {
 	}
 
 
-    updateRoom(data){
-
+    updateRoom(message){
+    	console.log('UPDATING_ROOM', message)
     	var updateMap = {};
 
-		if ( 'player_list' in this.props.socket.message ){
-			updateMap.players = this.props.socket.message.player_list;
-		}
+    	if (message.type == "UPDATE_PLAYERS"){
 
-		if ('is_host' in this.props.socket.message){
-			updateMap.isHost = this.props.socket.message.is_host;
-		}
+    		// figure out if user is the host
+    		for (var i = 0; i < message.data.players.length; i++){
+    			if (this.props.auth.user.username == message.data.players[i].username && message.data.players[i].is_host){
+    				updateMap.isHost = true;
+    			}
+    		}
+
+    		updateMap.players = message.data.players;
+    	} else if (message.type == "STARTING_GAME"){
+
+    		updateMap.gameState = message.type;
+
+    	} else if (message.type == "QUESTION_PHASE"){
+    		updateMap.gameState = message.type;
+    	} else if (message.type == "ANSWER_PHASE"){
+    		updateMap.gameState = message.type;
+    	} else if (message.type == "ENDING_GAME"){
+    		updateMap.gameState = message.type;
+    	}
 
 		this.setState(updateMap);
 
@@ -64,13 +78,19 @@ class Game extends Component {
 
 	renderPlayer(player, key){
 
-		if (player.username == this.props.currentUser.username){
+		var string = player.username
+
+		if (player.is_host) {
+			string = string + " (host)"
+		}
+
+		if (player.is_self){
 			return (
-				<li key={key}><b>{player.username}</b></li>
+				<li key={key}><b>{string}</b></li>
 			)
 		}
 		return (
-			<li key={key}>{player.username}</li>
+			<li key={key}>{string}</li>
 			)
 
 	}
@@ -80,9 +100,10 @@ class Game extends Component {
 
 			JSON.stringify({
 				'type': 'UPDATE_GAME',
+				'room_id': this.props.room_id,
 				'data': {
-					'room_id': this.props.room_id,
-					'type': 'GAME_START',
+					
+					'type': 'START_GAME',
 					'data': null
 				}
 			})
@@ -90,6 +111,7 @@ class Game extends Component {
 	}
 
 	render(){
+		console.log(this.state)
 		const { gameState, players, isHost } = this.state;
 		var player_list = players.map((item, key) => this.renderPlayer(item, key), this)
 
@@ -101,7 +123,7 @@ class Game extends Component {
 		}
 
 
-		if (gameState == 'WAITING') {
+		if (['WAITING'].includes(gameState)) {
 
 			return (
 				<div>
@@ -109,6 +131,16 @@ class Game extends Component {
 					<ul>{player_list}</ul>
 
 					{gameStartButton}
+				</div>
+			)
+		} else if (['STARTING_GAME'].includes(gameState)) {
+
+			return (
+				<div>
+					Players
+					<ul>{player_list}</ul>
+
+					Game will be starting shortly.
 				</div>
 			)
 		} else {
@@ -129,11 +161,11 @@ class Game extends Component {
 	}
 }
 
-// const mapStoreToProps = store => store;
-// const mapDispatchToProps = dispatch => ({
-// 	// initAuth: initAuthFactory(dispatch),
-// });
+const mapStoreToProps = store => store;
+const mapDispatchToProps = dispatch => ({
+	// initAuth: initAuthFactory(dispatch),
+});
 
-// export default connect(mapStoreToProps, mapDispatchToProps)(WaitingRoom);
+export default connect(mapStoreToProps, mapDispatchToProps)(Game);
 
-export default Game;
+// export default Game;

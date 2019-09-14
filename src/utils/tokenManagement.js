@@ -1,7 +1,7 @@
 import LocalStorageValue from './localStorageUtils.js'
 import config from './appConfig'
 import axios from 'axios';
-
+import actions from "../redux/auth/actions"
 
 class AuthenticationError extends Error {
 
@@ -16,8 +16,62 @@ class AuthenticationError extends Error {
     }
 }
 
-const getUserUrl = config.baseUrl + '/user'
-// const retrieveUserInfo = () => {
+
+axios.interceptors.request.use(function (config) {
+  console.log('request inceptor')
+    const token = getToken(accessTokenKey);
+    config.headers.Authorization = 'Bearer ' + token;
+    return config;
+});
+
+axios.interceptors.response.use(function (response) {
+    // Do something with response data - if access token was invalid - refresh it
+    return response;
+  }, async function (error) {
+    // Do something with response error
+    console.log('response interceptor', error, error.response)
+    if (error.response && error.response.status == 401){
+      console.log('401 error response interceptor')
+      const response = await refreshToken()
+      if (response ){
+        return await verifyToken();
+      }
+      
+
+      console.log('401 handled')
+    }
+
+
+
+    return Promise.reject("something went wrong");
+  });
+
+
+
+// will update redux state to authenticated if dispatch is provided
+async function requestTokenWithCredentials(username, password, dispatch){
+	return await axios.post(config.baseUrl + 'api/token/', {
+			username:username, 
+			password:password
+		}).then(response => {
+
+			setToken(accessTokenKey, response.data.access);
+			setToken(refreshTokenKey, response.data.refresh);
+			
+			if (dispatch) dispatch(actions.authenticateUser());
+
+			return Promise.resolve(response.data);
+			
+		}).catch(error => {
+
+			if (error.response && error.response.status == 401){
+				return Promise.reject('Incorrect username or password.');
+			}
+			
+			return Promise.reject('An unknown problem has occurred.');
+			
+		});
+}
 
 
 
@@ -122,5 +176,6 @@ export default {
 	get: getToken,
 	set: setToken,
 	verify: verifyToken,
-	refresh: refreshToken
+	refresh: refreshToken,
+	request: requestTokenWithCredentials
 }	
