@@ -15,8 +15,8 @@ import rootReducers from './redux/reducers';
 import configureStore from './redux/configureStore';
 import axios from 'axios';
 // axios.defaults.withCredentials = true
-
-const store = configureStore(rootReducers);
+import {store} from './redux/configureStore';
+// const store = configureStore(rootReducers);
 
 ReactDOM.render(
     <Root {...{ store }} />,

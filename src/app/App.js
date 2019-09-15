@@ -14,48 +14,17 @@ import AuthToken from '../utils/tokenManagement';
 import Navbar from "./Navbar";
 import { connect } from 'react-redux';
 
-// axios.interceptors.request.use(function (config) {
-//   console.log('request inceptor')
-//     const token = AuthToken.get(AuthToken.accessTokenKey);
-//     config.headers.Authorization = 'Bearer ' + token;
-
-//     return config;
-// }, function(error) {
-
-//   return Promise.reject();
-
-// });
-
-// axios.interceptors.response.use(function (response) {
-//     // Do something with response data - if access token was invalid - refresh it
-//     return response;
-//   }, async function (error) {
-//     // Do something with response error
-//     console.log('response interceptor', error, error.response)
-//     if (error.response && error.response.status == 401){
-//       console.log('401 error response interceptor')
-//       const response = await AuthToken.refresh()
-//       if (response ){
-//         return await AuthToken.verify();
-//       }
-      
-
-//       console.log('401 handled')
-//     }
-
-
-
-//     return Promise.reject("something went wrong");
-//   });
 
 
 class App extends Component {
-  
+
   render() {
 
-    
+      const {auth} = this.props;
+
       return (
         <div>
+
           <Navbar component={Navbar}/>
           <BrowserRouter>
               <Switch>
@@ -65,7 +34,13 @@ class App extends Component {
                 <Route exact path="/register" component={Register}/>
 
 
-                <PrivateRoute exact path="/trivia/room/:id" component={Room} authState={this.props.auth} isSocketRoute={true} />
+                <Route 
+                  exact 
+                  path="/trivia/room/:id" 
+                  render={(props) => (<PrivateRoute authState={auth} isSocketRoute={true} {...props}  />) } 
+                />
+
+                
                 <Route component={Error404}/>
               </Switch>
           </BrowserRouter>

@@ -2,49 +2,72 @@ import LocalStorageValue from './localStorageUtils.js'
 import config from './appConfig'
 import axios from 'axios';
 import actions from "../redux/auth/actions"
+import {store} from "../redux/configureStore";
 
-class AuthenticationError extends Error {
-
-	// types - UNKNOWN, INVALID_REFRESH, INVALID_ACCESS
-
-	constructor(...args) {
-        super(...args);
-        Error.captureStackTrace(this, AuthenticationError);
-
-        this.type = args[0];
-        this.msg = args[1];
-    }
-}
 
 
 axios.interceptors.request.use(function (config) {
-  console.log('request inceptor')
     const token = getToken(accessTokenKey);
     config.headers.Authorization = 'Bearer ' + token;
     return config;
 });
 
 axios.interceptors.response.use(function (response) {
-    // Do something with response data - if access token was invalid - refresh it
     return response;
   }, async function (error) {
-    // Do something with response error
+
     console.log('response interceptor', error, error.response)
     if (error.response && error.response.status == 401){
-      console.log('401 error response interceptor')
-      const response = await refreshToken()
-      if (response ){
-        return await verifyToken();
-      }
-      
-
-      console.log('401 handled')
-    }
-
-
+    	console.log('401 error response interceptor')
+    	await refreshAuthenticationStatus(store.dispatch);
+  	}
 
     return Promise.reject("something went wrong");
   });
+
+async function verifyAuthenticationStatus(dispatch){
+
+	dispatch = store.dispatch;
+	console.log(dispatch)
+	await verifyToken()
+	.then(response => {
+		dispatch(actions.authenticateUser());
+		dispatch(actions.setUser(response.data));
+	}).catch(error => {
+		console.log('Error verifying authentication status', error)
+		dispatch(actions.error(error));
+	});
+}
+
+async function refreshAuthenticationStatus(dispatch) {
+
+	await refreshToken()
+	.then(async response => {
+
+		await verifyToken()
+		.then(response => {
+
+			// update user info and update state to authenticated
+			dispatch(actions.authenticateUser());
+			dispatch(actions.setUser(response.data))
+
+		}).catch(error => {
+			// set state as not authenticated
+			console.log(error);
+			dispatch(actions.error(error));
+
+		});
+
+
+	}).catch(error => {
+		// set state as not authenticated
+		console.log(error);
+		dispatch(actions.error(error));
+
+	});
+	
+
+}
 
 
 
@@ -88,34 +111,33 @@ const setToken = (key, value) => {
 
 
 // HANDLEING TOKEN VERIFICATION
-var accessTokenKey = 'access-key';
-var refreshTokenKey = 'refresh-key';
+var accessTokenKey = 'access-key'; // will return user info upon success
+var refreshTokenKey = 'refresh-key'; // will return access key upon success
 
-// const verifyTokenUrl = config.baseUrl + 'trivia/token-verify/';
-// const refreshTokenUrl = config.baseUrl + 'api/token/refresh/';
+const verifyTokenUrl = config.baseUrl + 'trivia/token-verify/';
+const refreshTokenUrl = config.baseUrl + 'api/token/refresh/';
 
 
 async function verifyToken(){
-	console.log('in verify token')
-	const verifyTokenUrl = config.baseUrl + 'trivia/token-verify/';
-	return await axios.get(verifyTokenUrl).then(response => {
-		console.log('access token successfully verified', response)
-		return response.data;	
+
+	return await axios.get(verifyTokenUrl)
+	.then(response => {
+		return Promise.resolve(response.data);	
+	}).catch(error => {
+		return Promise.reject("Access token could not be verified.");
 	});
 }
 
 async function refreshToken() {
 
-	const refreshTokenUrl = config.baseUrl + 'api/token/refresh/';
-	const refreshToken = getToken(refreshTokenKey);
-
 	return await axios.post(refreshTokenUrl, {
-		refresh:refreshToken
+		refresh: getToken(refreshTokenKey)
 	}).then(response => {
 		setToken(accessTokenKey, response.data.access);
+		return Promise.resolve(response.data);
 
-		return response.data;
-
+	}).catch(error => {
+		return Promise.reject("Access token could not be refreshed.");
 	});
 }
 
@@ -175,7 +197,7 @@ export default {
 	refreshTokenKey: refreshTokenKey,
 	get: getToken,
 	set: setToken,
-	verify: verifyToken,
+	verify: verifyAuthenticationStatus,
 	refresh: refreshToken,
 	request: requestTokenWithCredentials
 }	
