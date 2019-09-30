@@ -15,7 +15,6 @@ class SocketRoute extends Component {
 		super(props);
 
 
-		console.log(Date.now())
 
 		this.state = {
 
@@ -23,7 +22,7 @@ class SocketRoute extends Component {
 			'isValidated': false,
 			'isValidating': false,
 			'didValidationFail': false,
-			lastAttemptedConnect: 0,
+			lastAttemptedConnect: Date.now(),
 			'numConnectAttempts': 0,
 
 
@@ -72,32 +71,29 @@ class SocketRoute extends Component {
 			if (!this.state.isValidated && !this.state.isValidating){
 
 			
+				// should go into initsocket - set ticket as part of state
+				// console.log('VALIDATING SOCKET CONNECTION')
+				// this.setState({
+				// 	isValidating: true
+				// }, () => {
+				// 	axios.get(baseUrl + 'trivia/socket-ticket')
+				// 	.then(response => {
+				// 		// console.log(response.data.ticket)
+				// 		if (response.data && response.data.ticket){
+				// 			this.props.socket.instance.send(JSON.stringify({
+				// 				'type': 'VALIDATE_CONNECTION',
+				// 				'data': {
+				// 					'ticket': response.data.ticket
+				// 				}
+				// 			}));
+				// 		} else {
+				// 			console.log('error in validating socket connection', response);
+				// 		}
 
-				console.log('VALIDATING SOCKET CONNECTION')
-				this.setState({
-					isValidating: true
-				}, () => {
-					axios.get(baseUrl + 'trivia/socket-ticket', {
-						headers: {
-							Authorization: 'Bearer ' + AuthToken.get(AuthToken.accessTokenKey)
-						}
-					}).then(response => {
-						// console.log(response.data.ticket)
-						if (response.data && response.data.ticket){
-							this.props.socket.instance.send(JSON.stringify({
-								'type': 'VALIDATE_CONNECTION',
-								'data': {
-									'ticket': response.data.ticket
-								}
-							}));
-						} else {
-							console.log('error in validating socket connection', response);
-						}
-
-					}).catch(error => {
-						console.log('error', error);
-					});
-				});
+				// 	}).catch(error => {
+				// 		console.log('error', error);
+				// 	});
+				// });
 				
 
 				

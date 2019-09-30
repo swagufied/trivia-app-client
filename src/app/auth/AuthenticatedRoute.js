@@ -10,13 +10,13 @@ import AuthToken from '../../utils/tokenManagement'
 
 
 const PrivateRoute = ({ authState: authState, isSocketRoute: isSocketRoute, ...props}) => {
-
+	
 	if (authState.isAuthenticated) {
 
 		if (isSocketRoute) return <SocketRoute {...props} />;
 
 		return <Route {...props} />
-	} else if (AuthToken.get(AuthToken.accessTokenKey)){
+	} else if (authState.attemptedVerification && !authState.isAuthenticated){
 
 		AuthToken.verify();
 		return "" // TODO - is this a hack solution? to prevent redirecting since AuthToken.verify is async

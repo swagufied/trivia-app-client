@@ -1,10 +1,9 @@
 import React, {Component} from "react";
 import axios from 'axios';
 import {baseUrl, accessKey, refreshKey} from "../config";
-import AuthToken from '../../utils/tokenManagement'
+import AuthToken from 'utils/token_management'
 import { connect } from 'react-redux';
 
-import {authenticateUser} from '../../redux/auth'
 import {Redirect, Route} from 'react-router';
 
 

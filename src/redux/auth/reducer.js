@@ -5,9 +5,10 @@ const initialState = {
 	attemptingVerification: false,
 	attemptedVerification: false,
 	isAuthenticated: false,
-	error: null,
 	refresh: false,
-	user: null
+	error: null,
+	user: null,
+	lastAuthenticationAttempt: Date.now()
 }
 
 const reducer = (state = initialState, { type, payload }) => {
@@ -20,17 +21,16 @@ const reducer = (state = initialState, { type, payload }) => {
 					...state,
 					attemptingVerification: true,
 					isAuthenticated: false,
-					refresh: false
+					lastAuthenticationAttempt: Date.now()
 				};
 			
-		case actionsTypes.AUTHENTICATED_USER:
+		case actionsTypes.AUTHENTICATE_USER:
 
 			return {
 					...state,
 					attemptingVerification: false,
 					attemptedVerification: true,
 					isAuthenticated: true,
-					refresh: false
 				};
 
 		case actionsTypes.AUTHENTICATION_ERROR:
@@ -41,17 +41,10 @@ const reducer = (state = initialState, { type, payload }) => {
 					attemptedVerification: true,
 					isAuthenticated: false,
 					error: payload,
-					refresh: false
 				};
 		case actionsTypes.REFRESH_STATE:
-			return {
+			return initialState;
 
-				attemptedVerification: false,
-				isAuthenticated: false,
-				error: null,
-				refresh: true,
-				user: null
-			};
 		case actionsTypes.SET_USER:
 			// console.log('setting user', payload)
 			return {
