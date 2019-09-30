@@ -1,7 +1,7 @@
 
 **Game Client (in development)**
 
-This project is developed in conjunction with a server that can be found [here](). This is a client that allows users to interact with games developed for the server.
+This project is developed in conjunction with a server that can be found [here](https://github.com/swagufied/trivia-app). This is a client that allows users to interact with games developed for the server.
 
 **How does it work?**
 
