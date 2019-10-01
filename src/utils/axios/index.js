@@ -1,6 +1,6 @@
 import axios from 'axios';
-import TokenUtils from '../tokenManagement'
-import {refreshTokenAndReattemptRequest} from 'utils/token_management/responseHandlers'
+import {refreshTokenAndReattemptRequest} from 'utils/auth/responseHandlers'
+import {getAccessToken} from 'utils/auth/tokenManagement'
 
 // to avoid modifying the base axios instance
 const customAxios = axios.create({
@@ -15,8 +15,9 @@ export {
 
 customAxios.interceptors.request.use(
 	function (config) {
-	    const token = TokenUtils.getAccessToken();
+	    const token = getAccessToken();
 	    config.headers.Authorization = 'Bearer ' + token;
+	    console.log(config)
 	    return config;
 	}
 );
@@ -31,7 +32,8 @@ customAxios.interceptors.response.use(
 
 
 		if (error.response.state == 401){
-			return TokenUtils.refreshTokenAndReattemptRequest(error)
+			console.log('attempting to refresh token and reattempt request')
+			return refreshTokenAndReattemptRequest(error)
 		}
 		return Promise.reject(error);
 	}

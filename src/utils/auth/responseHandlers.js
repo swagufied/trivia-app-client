@@ -1,17 +1,21 @@
-import TokenDispatch from 'redux/auth'
-import TokenUtils from 'utils/token_management'
+import {dispatchRefreshAuth} from 'redux/auth/dispatch'
 import axios from 'axios'
+import {setAccessToken, getRefreshToken} from './tokenManagement'
+import {refreshAccessToken} from './tokenRequest'
+import {verifyAuthenticationStatus as updateUserStore} from './tokenRequest'
 
 let isAlreadyFetchingAccessToken = false;
 let subscribers = [];
 
-// this function will be called when axios gets a 401 response
+// this function will be called when axios gets a 401 response - this will request a refresh token and reattempt the request
 async function refreshTokenAndReattemptRequest(error) {
 	try {
 		const { response: errorResponse } = error;
-		const refreshToken = TokenUtils.getRefreshToken();
+		const refreshToken = getRefreshToken();
+
+		// if there is no refresh token
 		if (!refreshToken) {
-			TokenDispatch.refresh();
+			dispatchRefreshAuth();
 			return Promise.reject(error);
 		}
 
@@ -26,14 +30,18 @@ async function refreshTokenAndReattemptRequest(error) {
 			isAlreadyFetchingAccessToken = true;
 
 			try {
-				const response = await TokenUtils.refreshToken();
-				const newRefreshToken = response.data.access;
-				TokenUtils.saveRefreshToken(newRefreshToken);
-				TokenDispatch.
+				const accessToken = await refreshAccessToken();
+				const newAccessToken = accessToken;
+				setAccessToken(newAccessToken);
+
+				// get user information and update redux auth store
+				updateUserStore();
+
+				
 				isAlreadyFetchingAccessToken = false;
-				onAccessTokenFetched(newRefreshToken);
+				onAccessTokenFetched(newAccessToken);
 			} catch(err) {
-				TokenDispatch.refresh();
+				dispatchRefreshAuth();
 				return Promise.reject(error);
 			}
 			
