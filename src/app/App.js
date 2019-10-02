@@ -8,7 +8,6 @@ import Error404 from "./Errors";
 
 import PrivateRoute from "./auth/AuthenticatedRoute";
 import axios from 'axios';
-import AuthToken from '../utils/tokenManagement';
 
 
 import Navbar from "./Navbar";

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {getDesiredType} from '../../utils/socketUtils'
+// import {getDesiredType} from '../../utils/socketUtils'
 import { connect } from 'react-redux';
 import initAuthFactory, {refreshAuth} from '../../redux/auth'
 import {isMapsEqual} from '../../utils/comparisonUtils'

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 
 import axios from 'axios';
 import {baseUrl} from '../config';
-import AuthToken from '../../utils/tokenManagement';
 
 
 // needs a callback for indicating password veriification, and the room id number
@@ -38,10 +37,6 @@ export default class Password extends Component {
 		axios.post(baseUrl + 'trivia/verify-room-password' , {
 			room_id: this_.props.room_id,
 			password: this_.state.passwordInput
-		}, {
-			headers: {
-				Authorization: 'Bearer ' + AuthToken.get(AuthToken.accessTokenKey)
-			}
 		}).then( response => {
 			console.log(response);
 			if (response.data && response.data.is_successful) {

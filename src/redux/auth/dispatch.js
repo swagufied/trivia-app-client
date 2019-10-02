@@ -1,5 +1,4 @@
 import actions from './actions';
-// import { browserHistory } from 'react-router'
 import {store} from 'redux/configureStore';
 
 
@@ -20,10 +19,8 @@ const dispatchAuthenticationError = () => {
 	dispatch(actions.error())
 }
 
-const dispatchSetUser = dispatch => (user) => {
-	dispatch(actions.setUser({
-		'data': user
-	}))
+const dispatchSetUser = (user) => {
+	dispatch(actions.setUser(user))
 }
 
 export {

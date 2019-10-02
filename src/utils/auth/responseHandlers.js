@@ -26,10 +26,13 @@ async function refreshTokenAndReattemptRequest(error) {
 			});
 		});
 
+		console.log('subscribers', subscribers)
+
 		if (!isAlreadyFetchingAccessToken) {
 			isAlreadyFetchingAccessToken = true;
 
 			try {
+				console.log('refreshing access token')
 				const accessToken = await refreshAccessToken();
 				const newAccessToken = accessToken;
 				setAccessToken(newAccessToken);

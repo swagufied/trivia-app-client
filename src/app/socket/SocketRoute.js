@@ -5,7 +5,6 @@ import axios from 'axios';
 import { connect } from 'react-redux';
 import {socketBaseURL} from './socketConfig';
 import {baseUrl} from '../config'
-import AuthToken from '../../utils/tokenManagement'
 import initSocketFactory from '../../redux/socket'
 
 const maxConnectAttempts = 3;

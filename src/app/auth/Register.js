@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import axios from 'axios';
 import {baseUrl, accessKey} from "../config";
-import AuthToken from "../../utils/tokenManagement"
+import {setAccessToken} from "utils/auth/tokenManagement"
 
 export default class Register extends Component {
 
@@ -35,7 +35,7 @@ export default class Register extends Component {
 			if (response.data.errors){
 				this.setState({errors: response.data.errors});
 			} else {
-				AuthToken.set(accessKey, response.data.access_token)
+				setAccessToken(accessKey, response.data.access_token)
 				this.props.history.push('/login')
 			}
 			

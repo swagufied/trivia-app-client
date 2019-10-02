@@ -1,10 +1,11 @@
 import axios from 'axios';
 import {refreshTokenAndReattemptRequest} from 'utils/auth/responseHandlers'
 import {getAccessToken} from 'utils/auth/tokenManagement'
+import {baseURL} from 'config'
 
 // to avoid modifying the base axios instance
 const customAxios = axios.create({
-	baseURL: 'http://127.0.0.1:8000/'
+	baseURL: baseURL
 })
 
 export {
@@ -17,7 +18,6 @@ customAxios.interceptors.request.use(
 	function (config) {
 	    const token = getAccessToken();
 	    config.headers.Authorization = 'Bearer ' + token;
-	    console.log(config)
 	    return config;
 	}
 );
@@ -29,9 +29,8 @@ customAxios.interceptors.response.use(
 		return response
 	},
 	function(error) {
-
-
-		if (error.response.state == 401){
+		console.log('axiosResponseInterceptor', error)
+		if (error.response.status == 401){
 			console.log('attempting to refresh token and reattempt request')
 			return refreshTokenAndReattemptRequest(error)
 		}

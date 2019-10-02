@@ -17,7 +17,7 @@ async function requestTokenWithCredentials(username, password){
 			return Promise.resolve(response.data);
 			
 		}).catch(error => {
-			console.log(error)
+			console.log('requestTokenWithCredentials', error)
 			if (error.response && error.response.status == 401){
 				return Promise.reject('Incorrect username or password.');
 			}
@@ -31,10 +31,10 @@ async function verifyAccessToken(){
 
 	return await axios.get(baseURL + 'trivia/token-verify/')
 	.then(response => {
-		return Promise.resolve(response.data);	
+		return Promise.resolve(response);	
 	}).catch(error => {
 		console.log('access token couldnt be verified', error)
-		return Promise.reject("Access token could not be verified.");
+		return Promise.reject(error);
 	});
 }
 
@@ -44,7 +44,7 @@ async function verifyAuthenticationStatus(){
 	await verifyAccessToken()
 	.then(response => {
 		dispatchAuthenticateUser();
-		dispatchSetUser();
+		dispatchSetUser(response.data.user);
 	}).catch(error => {
 		console.log('Error verifying authentication status', error)
 		dispatchAuthenticationError();
