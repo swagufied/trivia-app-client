@@ -1,6 +1,6 @@
 import axios from 'axios';
-import {refreshTokenAndReattemptRequest} from 'utils/auth/responseHandlers'
-import {getAccessToken} from 'utils/auth/tokenManagement'
+import {refreshTokenAndReattemptRequest} from 'utils/auth/axiosResponseHandlers'
+import {getAccessToken} from 'utils/auth/tokenGetSet'
 import {baseURL} from 'config'
 
 // to avoid modifying the base axios instance
@@ -12,7 +12,6 @@ export {
 	customAxios
 }
 
-// if token has been called within t time, call the function in interval
 
 customAxios.interceptors.request.use(
 	function (config) {

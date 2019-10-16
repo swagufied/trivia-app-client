@@ -1,11 +1,11 @@
 import {customAxios as axios} from 'utils/axios'
 
+
+// requests a ticket from the server and gets it validated
 function onOpen(){
-    console.log('socket opened')
     // register the connection with the server
     axios.get('trivia/socket-ticket')
     .then(response => {
-        // console.log(response.data.ticket)
         if (response.data && response.data.ticket){
             this.send(JSON.stringify({
                 'type': 'VALIDATE_CONNECTION',
@@ -14,19 +14,17 @@ function onOpen(){
                 }
             }));
         } else {
-            console.log('error in validating socket connection', response);
-            this.error = 'error in validating socket connection'
+            this.error = 'There was an error authenticating the socket connection.'
         }
 
     }).catch(error => {
-        console.error('error', error);
         this.error = error
     });
                 
 
 }
 
-
+// handles messages received form socket
 function onMessage(evt){
 
 

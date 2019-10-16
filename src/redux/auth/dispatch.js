@@ -7,11 +7,10 @@ const dispatch = store.dispatch;
 
 
 const dispatchAuthenticateUser = () => {
-	console.log('dispatch authenticateUser')
 	dispatch(actions.authenticateUser())
 }
 
-const dispatchRefreshAuth = () => {
+const dispatchResetAuth = () => {
 	dispatch(actions.refresh())
 }
 
@@ -25,7 +24,7 @@ const dispatchSetUser = (user) => {
 
 export {
 	dispatchAuthenticateUser,
-	dispatchRefreshAuth,
+	dispatchResetAuth,
 	dispatchSetUser,
 	dispatchAuthenticationError
 }

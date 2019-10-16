@@ -1,1 +1,0 @@
-This folder is not used. remains as a remnant of socket pieces built prior

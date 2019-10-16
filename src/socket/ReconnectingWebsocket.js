@@ -1,6 +1,13 @@
-// const WebSocket = requi  re('ws');
+/*
+This socket will reconnect when it is disconnected
 
+This time it takes between reconnect attempts can be set by autoReconnectInterval
+Message updates can be tracked by number
 
+to check status of socket connection, there are two boolean variables, connected and connecting
+
+to track status of messages there are two variables: error and message
+*/
 export default function WebSocketClient(){
     this.number = 0;    // Message number
     this.autoReconnectInterval = 5*1000;    // ms
@@ -9,15 +16,15 @@ export default function WebSocketClient(){
     this.connecting = false
 }
 WebSocketClient.prototype.open = function(url){
-    console.log('websocket open', url)
     this.connecting=true
     this.url = url;
     this.instance = new WebSocket(this.url);
     
     this.instance.onopen =  () => {
         this.connecting=false
-        this.connected=true
+        
         this.onopen()
+        this.connected=true
         this.forceComponentUpdate()
     }
 
@@ -72,13 +79,3 @@ WebSocketClient.prototype.onmessage = function(data,flags,number){  console.log(
 WebSocketClient.prototype.onerror = function(e){    console.log("WebSocketClient: error",arguments);    }
 WebSocketClient.prototype.onclose = function(e){    console.log("WebSocketClient: closed",arguments);   }
 WebSocketClient.prototype.forceComponentUpdate = function(){}
-
-// var wsc = new WebSocketClient();
-// wsc.open('wss://localhost:443/');
-// wsc.onopen = function(e){
-//     console.log("WebSocketClient connected:",e);
-//     this.send("Hello World !");
-// }
-// wsc.onmessage = function(data,flags,number){
-//     console.log(`WebSocketClient message #${number}: `,data);
-// }

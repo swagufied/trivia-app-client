@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import axios from 'axios';
-import {baseUrl} from '../config';
+import {baseURL} from 'config';
 
 
 // needs a callback for indicating password veriification, and the room id number
@@ -34,7 +34,7 @@ export default class Password extends Component {
 		event.preventDefault();
 		const this_ = this;
 
-		axios.post(baseUrl + 'trivia/verify-room-password' , {
+		axios.post(baseURL + 'trivia/verify-room-password' , {
 			room_id: this_.props.room_id,
 			password: this_.state.passwordInput
 		}).then( response => {
