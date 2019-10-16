@@ -1,6 +1,6 @@
 import actions from './actions';
-import WebSocketClient from '../../app/socket/ReconnectingWebsocket'
-import axios from 'axios';
+// import WebSocketClient from '../../app/socket/ReconnectingWebsocket'
+import {customAxios as axios} from 'utils/axios'
 import {baseUrl} from '../../app/config'
 
 
@@ -10,25 +10,20 @@ const reconnectDecay = 2;
 var currentReconnectInterval = initialReconnectInterval;
 const maxReconnectAttempts = 3;
 
+// this intiates the socket connection. when socket is connected, it will be validated and stay connected if validation is successful
 export default dispatch => (uri) => {
     if (!('WebSocket' in window)) {
         dispatch(actions.error({ error: 'WebSocket is not supported by your browser' }));
         return;
     }
 
-
-    // const socket = initSocketConnection(uri, dispatch);
-
-    // const socket = new WebSocket(uri);
-    const socket = WebSocketClient;
-    socket.open(uri)
-    // dispatch(actions.connect());
+    const socket = new WebSocket(uri);
+    // const socket = initSocketConnection(uri, dispatch)  
 
     console.log('socket connected')
 
     // socket.onopen = () => dispatch(actions.open({ instance: socket }));
     socket.onopen = () => onOpen(socket, dispatch);
-
     socket.onerror = () => dispatch(actions.error({ error: true }));
     socket.onmessage = evt => dispatch(actions.message({ ...JSON.parse(evt.data) }));
     socket.onclose = () => onClose(socket, uri, dispatch)
@@ -37,7 +32,13 @@ export default dispatch => (uri) => {
 
 function initSocketConnection(uri, dispatch){
     console.log('initSocketConnection')
-    const socket = new WebSocket(uri);
+    // const socket=null;
+    // try{
+        const socket = new WebSocket(uri);
+    // } catch {
+    //     console.log('caught socket connection error')
+    // }
+    
     console.log('socket', socket)
     if (!socket) {
         setTimeout(initSocketConnection(uri, dispatch), currentReconnectInterval)
@@ -59,7 +60,7 @@ function onOpen(socket, dispatch){
 
 
     // register the connection with the server
-    axios.get(baseUrl + 'trivia/socket-ticket')
+    axios.get('trivia/socket-ticket')
     .then(response => {
         // console.log(response.data.ticket)
         if (response.data && response.data.ticket){
@@ -103,7 +104,7 @@ function onClose(socket, uri, dispatch) {
     console.log('socket closing')
     dispatch(actions.close());
     socket = null;
-   setTimeout(initSocketConnection(uri, dispatch), currentReconnectInterval)
+    setTimeout(initSocketConnection(uri, dispatch), currentReconnectInterval)
     currentReconnectInterval += reconnectDecay; // lengthen time before attempt is made
 
 }

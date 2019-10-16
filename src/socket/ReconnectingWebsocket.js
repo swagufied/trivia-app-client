@@ -1,18 +1,33 @@
+// const WebSocket = requi  re('ws');
+
+
 export default function WebSocketClient(){
     this.number = 0;    // Message number
     this.autoReconnectInterval = 5*1000;    // ms
+    this.message = ""
+    this.connected = false
+    this.connecting = false
 }
 WebSocketClient.prototype.open = function(url){
+    console.log('websocket open', url)
+    this.connecting=true
     this.url = url;
     this.instance = new WebSocket(this.url);
-    this.instance.on('open',()=>{
-        this.onopen();
-    });
-    this.instance.on('message',(data,flags)=>{
-        this.number ++;
+    
+    this.instance.onopen =  () => {
+        this.connecting=false
+        this.connected=true
+        this.onopen()
+        this.forceComponentUpdate()
+    }
+
+    this.instance.onmessage = (data,flags)=>{
+        this.number++;
         this.onmessage(data,flags,this.number);
-    });
-    this.instance.on('close',(e)=>{
+        this.forceComponentUpdate()
+    };
+
+    this.instance.onclose = (e)=>{
         switch (e.code){
         case 1000:  // CLOSE_NORMAL
             console.log("WebSocket: closed");
@@ -22,8 +37,9 @@ WebSocketClient.prototype.open = function(url){
             break;
         }
         this.onclose(e);
-    });
-    this.instance.on('error',(e)=>{
+        this.forceComponentUpdate()
+    };
+    this.instance.onerror = (e)=>{
         switch (e.code){
         case 'ECONNREFUSED':
             this.reconnect(e);
@@ -32,7 +48,8 @@ WebSocketClient.prototype.open = function(url){
             this.onerror(e);
             break;
         }
-    });
+        this.forceComponentUpdate()
+    };
 }
 WebSocketClient.prototype.send = function(data,option){
     try{
@@ -50,11 +67,11 @@ WebSocketClient.prototype.reconnect = function(e){
         that.open(that.url);
     },this.autoReconnectInterval);
 }
-WebSocketClient.prototype.onopen = function(e){ console.log("WebSocketClient: open",arguments); }
+WebSocketClient.prototype.onopen =function(e){  console.log("WebSocketClient: open",arguments); }
 WebSocketClient.prototype.onmessage = function(data,flags,number){  console.log("WebSocketClient: message",arguments);  }
 WebSocketClient.prototype.onerror = function(e){    console.log("WebSocketClient: error",arguments);    }
 WebSocketClient.prototype.onclose = function(e){    console.log("WebSocketClient: closed",arguments);   }
-
+WebSocketClient.prototype.forceComponentUpdate = function(){}
 
 // var wsc = new WebSocketClient();
 // wsc.open('wss://localhost:443/');
