@@ -11,9 +11,9 @@ import * as serviceWorker from './serviceWorker';
 
 
 import Root from './app/Root';
-import rootReducers from './redux/reducers';
-import configureStore from './redux/configureStore';
-import axios from 'axios';
+// import rootReducers from './redux/reducers';
+// import configureStore from './redux/configureStore';
+// import axios from 'axios';
 // axios.defaults.withCredentials = true
 import {store} from './redux/configureStore';
 // const store = configureStore(rootReducers);

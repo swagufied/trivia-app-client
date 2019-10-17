@@ -1,47 +1,40 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 
 import CircularProgress from '@material-ui/core/CircularProgress';
-import Chat from '../chat/Chat';
-import Game from '../trivia/Game';
-import {isMapsEqual} from 'utils/comparisonUtils'
-
-
-
-import axios from 'axios';
+import {customAxios as axios} from 'utils/axios';
 import {baseURL} from 'config'
 
 
 import Password from './Password'
 
 
-const maxJoinAttempts = 3; //TODO
 class Room extends Component {
 
     constructor(props){
         super(props)
-
+        // console.log('Room props', props)
         this.state = {
-            isAuthorized: false,
+            isAuthorized: false, // marker if user is allowed to join the room
 
             passwordRequired: true,
             passwordVerified: false,
             passwordInput: "",
-            errorMessage: "",
+
+            errorMessage: "You dont have permission to access this room.", // to display any error messages in connecting to the room
 
             attemptingJoin: false,
             attemptedJoin: false,
-            didJoin: false,
+            didJoin: false, // if the user successfully joined the room
             numJoinAttempts: 0,
 
-            name: ""
+            name: "" // name of the room
         };
 
         this.verifyPassword = this.verifyPassword.bind(this);
-        this.handlePasswordSubmit = this.handlePasswordSubmit.bind(this);
-        this.handlePasswordInputChange = this.handlePasswordInputChange.bind(this);
+        this.updatePassword = this.updatePassword.bind(this);
+
     }
 
 
@@ -51,12 +44,10 @@ class Room extends Component {
     
     */
     componentDidMount() {
-
-
         // get the room info
         axios.get(baseURL + 'trivia/room/' + this.props.match.params.id)
         .then(response => {
-            
+
             if (response.data){
 
                 var update = {};
@@ -66,6 +57,8 @@ class Room extends Component {
                     update.isAuthorized = true;
                 } else if (response.data.is_playing && response.data.is_member){
                     update.isAuthorized = true;
+                } else {
+                    update.errorMessage = "The room is already in-game."
                 }
 
                 // if the room is password protected - 
@@ -76,14 +69,9 @@ class Room extends Component {
                 update.name = response.data.name
 
                 this.setState(update);
-
             } 
-            
-
-
-            console.log(response);
         }).catch(error => {
-            console.log('error')
+            this.setState({errorMessage:"There was an error trying to join the room."});
         });
 
         
@@ -91,10 +79,11 @@ class Room extends Component {
 
     componentDidUpdate(prevProps, prevState){
 
-        // console.log(prevProps.socket.message, this.props.socket.message)
-        if ( prevProps.socket.type != this.props.socket.type ||  !isMapsEqual(prevProps.socket.message, this.props.socket.message) ){
+        // only bother checking if new socket message is available
+        if ( prevProps.socket.message_number != this.props.socket.message_number ){
 
             if (this.props.socket.type == 'JOIN_ROOM'){
+                // updte state according to success of socket join room
                 if (this.props.socket.message && this.props.socket.message.is_successful) {
                     this.setState({
                             attemptingJoin: false,
@@ -113,7 +102,7 @@ class Room extends Component {
                 this.updateRoomHandle();
             }
         }
-
+        // if the user hasnt joined a room yet, emit a join room request to the socket
         if (!this.state.didJoin){
             if (this.state.isAuthorized && ((this.state.passwordRequired && this.state.passwordVerified) || !this.state.passwordRequired) ){
 
@@ -125,13 +114,6 @@ class Room extends Component {
                 
             }
         }
-       
-
-        
-        
-
-
-        // TODO: retry join room if it failed
 
     }
 
@@ -143,41 +125,16 @@ class Room extends Component {
 
     /*
 
-    PASSWORD FUNCTIONS
+    PASSWORD FUNCTIONS - these are to sync the http verification with the socket verification
     
     */
+    // callback for Password component
     verifyPassword(){
-        // console.log(this, 'verifyPassword')
-        this.setState({
-            passwordVerified: true
-        });
+        this.setState({passwordVerified: true});
     }
-    handlePasswordInputChange(event) {
-        this.setState({passwordInput: event.target.value});
+    updatePassword(password){
+        this.setState({passwordInput: password});
     }
-
-    handlePasswordSubmit(event) {
-        event.preventDefault();
-        const this_ = this;
-
-        axios.post(baseURL + 'trivia/verify-room-password' , {
-            room_id: this_.props.match.params.id,
-            password: this_.state.passwordInput
-        }).then( response => {
-            console.log(response);
-            if (response.data && response.data.is_successful) {
-                this_.verifyPassword();
-            } else {
-                this_.setState({
-                    errorMessage: response.data.error
-                });
-            }
-        }).catch( error => {
-            console.log('room password error', error);
-        })
-    }
-
-
     
 
     /*
@@ -207,48 +164,35 @@ class Room extends Component {
         );
     }
 
-    joinRoomHandle(){
 
-    }
+    // how to handle any room updates
     updateRoomHandle(){
         console.log('UPDATING ROOM')
     }
 
 
     render() {
-        const { socket } = this.props;
-        const { passwordRequired, passwordVerified, isAuthorized, didJoin, attemptedJoin, name } = this.state;
+        const { socket, gameComponent: Component } = this.props;
+        const { passwordRequired, passwordVerified, isAuthorized, didJoin, attemptedJoin, name, errorMessage } = this.state;
 
+        // the game is underway, but the user is not a player of the game
         if ( !isAuthorized ){
             return (
-                "You dont have permission to this room"
-
+                <div>{errorMessage}</div>
             );
         }
 
+        // if password is required, render password component
         if ( passwordRequired && !passwordVerified) {
-            return (
-                <div>
-                    <h1>Input Password: {name}</h1>
-                    {this.state.errorMessage}
-                    <form onSubmit={this.handlePasswordSubmit}>
-                        <input type="text" value={this.state.passwordInput} onChange={this.handlePasswordInputChange} />
-                        <input type="submit" value="send" />
-                    </form>
-                </div>
-            );
+            return <Password room_id={this.props.match.params.id} verifyPassword={this.verifyPassword} updatePassword={this.updatePassword}/>;
+
         } else if ( !passwordRequired || passwordVerified) {
 
+            // successfully passed password requirements and recognized by socket
             if ( didJoin ){
-                // PLUG IN GAME HERE
-                return (
-                    <div>
 
-                        <Game  socket={socket} room_id={this.props.match.params.id} />
-                        <Chat room_id={this.props.match.params.id} />
+                return <Component socket={socket} room_id={this.props.match.params.id}/>;
 
-                    </div>
-                );
             } else if (attemptedJoin) {
                 return (
                     "Failed to join room. Refresh the page."
@@ -264,25 +208,4 @@ class Room extends Component {
     }
 }
 
-// Room.propTypes = {
-//     socket: PropTypes.object.isRequired,
-//     refreshAuth: PropTypes.func.isRequired,
-// };
-
-
-const mapStoreToProps = store => store;
-const mapDispatchToProps = dispatch => ({});
-
-export default connect(mapStoreToProps, mapDispatchToProps)(Room);
-
-// export default Room;
-
-// const mapPropsToProps = store => store;
-// const mapDispatchToProps = dispatch => ({
-//     initSocket: initSocketFactory(dispatch),
-// });
-
-// export default connect(mapPropsToProps, mapDispatchToProps)(Room);
-//mapStateToProps
-
-                    // {!loading && <CardText><Grid matrix={game.matrix} /></CardText>}
+export default Room;

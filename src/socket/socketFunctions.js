@@ -36,8 +36,9 @@ function onMessage(evt){
             this.close()
         }
     } else {
-
-       this.message = payload
+        console.log('socket payload', payload)
+        this.type = payload.type
+       this.message = payload.data
     }
 
 }

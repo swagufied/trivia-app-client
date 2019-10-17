@@ -1,31 +1,28 @@
 import React, { Component } from 'react';
 import {Route} from 'react-router';
-import Socket from 'socket'
+import initSocketFactory from 'redux/socket'
+import { connect } from 'react-redux';
+
 
 // initializes socket and updates children when socket receives message
 
 class SocketRoute extends Component {
 	constructor(props){
 		super(props)
-		this.forceUpdate = this.forceUpdate.bind(this)
 	}
 	componentDidMount(){
-		this.socket = Socket();
-		this.socket.forceComponentUpdate = this.forceUpdate
+		this.props.initSocket(this.props.socketURL);
 	}
 
-	forceUpdate(){
-		this.setState({})
-	}
-
+	
 	render(){
 
-		const { socket, props } = this;
+		const { props } = this;
+		const {socket} = this.props;
 		const Component = props.component
-
+		// console.log('socket', socket)
 		if (socket && socket.connected && socket.instance){
-			
-			return <Component  {...this.props} />
+			return <Component  {...this.props} socket={socket} />
 			
 		} else {
 			return "Connecting socket...";
@@ -33,4 +30,11 @@ class SocketRoute extends Component {
 	}
 }
 
-export default SocketRoute
+const mapStoreToProps = store => store;
+const mapDispatchToProps = dispatch => ({
+	initSocket: initSocketFactory(dispatch)
+});
+
+export default connect(mapStoreToProps, mapDispatchToProps)(SocketRoute);
+
+// export default SocketRoute

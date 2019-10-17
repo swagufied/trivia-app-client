@@ -11,6 +11,7 @@ to track status of messages there are two variables: error and message
 export default function WebSocketClient(){
     this.number = 0;    // Message number
     this.autoReconnectInterval = 5*1000;    // ms
+    this.type = ""
     this.message = ""
     this.connected = false
     this.connecting = false
@@ -25,13 +26,13 @@ WebSocketClient.prototype.open = function(url){
         
         this.onopen()
         this.connected=true
-        this.forceComponentUpdate()
+        this.onOpenCallback()
     }
 
     this.instance.onmessage = (data,flags)=>{
         this.number++;
         this.onmessage(data,flags,this.number);
-        this.forceComponentUpdate()
+        this.onMessageCallback(data, flags)
     };
 
     this.instance.onclose = (e)=>{
@@ -44,7 +45,7 @@ WebSocketClient.prototype.open = function(url){
             break;
         }
         this.onclose(e);
-        this.forceComponentUpdate()
+        this.onCloseCallback()
     };
     this.instance.onerror = (e)=>{
         switch (e.code){
@@ -55,7 +56,7 @@ WebSocketClient.prototype.open = function(url){
             this.onerror(e);
             break;
         }
-        this.forceComponentUpdate()
+        this.onErrorCallback()
     };
 }
 WebSocketClient.prototype.send = function(data,option){
@@ -67,7 +68,7 @@ WebSocketClient.prototype.send = function(data,option){
 }
 WebSocketClient.prototype.reconnect = function(e){
     console.log(`WebSocketClient: retry in ${this.autoReconnectInterval}ms`,e);
-        this.instance.removeAllListeners();
+        // this.instance.removeAllListeners();
     var that = this;
     setTimeout(function(){
         console.log("WebSocketClient: reconnecting...");
@@ -78,4 +79,8 @@ WebSocketClient.prototype.onopen =function(e){  console.log("WebSocketClient: op
 WebSocketClient.prototype.onmessage = function(data,flags,number){  console.log("WebSocketClient: message",arguments);  }
 WebSocketClient.prototype.onerror = function(e){    console.log("WebSocketClient: error",arguments);    }
 WebSocketClient.prototype.onclose = function(e){    console.log("WebSocketClient: closed",arguments);   }
-WebSocketClient.prototype.forceComponentUpdate = function(){}
+WebSocketClient.prototype.onOpenCallback = function(){}
+WebSocketClient.prototype.onMessageCallback = function(){}
+WebSocketClient.prototype.onCloseCallback = function(){}
+WebSocketClient.prototype.onErrorCallback = function(){}
+

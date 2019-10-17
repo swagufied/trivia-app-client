@@ -1,1 +1,0 @@
-Socket state is no longer stored in redux
