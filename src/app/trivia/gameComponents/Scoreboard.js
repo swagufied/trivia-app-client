@@ -20,7 +20,7 @@ const Scoreboard = ({players:players, renderScores: renderScores}) => {
 	console.log(players)
 	let player_rows = players.map((item, key) => renderPlayerRow(item, key, renderScores))
 
-	return <table>{player_rows}</table>;
+	return <table><tbody>{player_rows}</tbody></table>;
 
 }
 
