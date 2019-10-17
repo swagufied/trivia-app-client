@@ -15,9 +15,7 @@ players = [{
 
 */
 const Scoreboard = ({players:players, renderScores: renderScores}) => {
-	
 
-	console.log(players)
 	let player_rows = players.map((item, key) => renderPlayerRow(item, key, renderScores))
 
 	return <table><tbody>{player_rows}</tbody></table>;
@@ -25,7 +23,7 @@ const Scoreboard = ({players:players, renderScores: renderScores}) => {
 }
 
 function renderPlayerRow(player, key, renderScores){
-	console.log(player)
+
 	const username = player.is_host ? player.username + " (host)" : player.username;
 
 	return (

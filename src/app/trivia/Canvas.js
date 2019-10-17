@@ -5,9 +5,8 @@ import initAuthFactory, {refreshAuth} from '../../redux/auth'
 import {isMapsEqual} from '../../utils/comparisonUtils'
 
 
-import HUD from './HUD';
-// import Question from './Question';
-// import Answer from './Answer';
+import Question from './gameComponents/Question';
+import Answer from './gameComponents/Answer';
 import Scoreboard from './gameComponents/Scoreboard'
 
 
@@ -21,7 +20,9 @@ class Game extends Component {
 			players:[],
 			gameState: 'WAITING',
 			isHost: false,
-			timer: 0
+			timer: null,
+			question: null,
+			answer: null
 		}
 
 
@@ -46,7 +47,7 @@ class Game extends Component {
 
 
     updateRoom(message){
-    	console.log('UPDATING_ROOM', message)
+    	// console.log('UPDATING_ROOM', message)
     	var updateMap = {};
 
     	if (message.type == "UPDATE_PLAYERS"){
@@ -71,14 +72,19 @@ class Game extends Component {
     		message.data.players[current_user_index] = movedPlayer
 
     		updateMap.players = message.data.players;
-    	} else if (message.type == "STARTING_GAME"){
-
-    		updateMap.gameState = message.type;
+    	} else if (message.type == "UPDATE_TIMER") {
+    		updateMap.timer = message.data.timer
+    	} else if (message.type == "START_GAME"){
+    		updateMap.gameState = "STARTING";
 
     	} else if (message.type == "QUESTION_PHASE"){
     		updateMap.gameState = message.type;
+    		updateMap.question = message.data.question
+    		updateMap.timer = null
     	} else if (message.type == "ANSWER_PHASE"){
     		updateMap.gameState = message.type;
+    		updateMap.answer = message.data	
+    		updateMap.timer = null
     	} else if (message.type == "ENDING_GAME"){
     		updateMap.gameState = message.type;
     	}
@@ -111,7 +117,7 @@ class Game extends Component {
 	render(){
 
 		const {gameState, isHost, players, timer} = this.state
-
+		const {socket, room_id} = this.props
 		// waiting room
 		if (gameState == "WAITING"){
 
@@ -140,16 +146,32 @@ class Game extends Component {
 				)
 		}
 		// question phase
-		else if (gameState == "QUESTION"){
-
+		else if (gameState == "QUESTION_PHASE"){
+			return (
+				<div>
+					<Scoreboard players = {this.state.players} renderScores={false}/>
+					Time Remaining: {timer}
+					<Question question = {this.state.question} socket={socket} room_id = {room_id}/>
+				</div>
+				)
 		}
 		// answer phase
-		else if (gameState == "ANSWER"){
-			
+		else if (gameState == "ANSWER_PHASE"){
+			return (
+				<div>
+					<Scoreboard players = {this.state.players} renderScores={false}/>
+					Next question in: {timer}
+					<Answer answer = {this.state.answer} />
+				</div>
+				)
 		}
 		// game over
 		else if (gameState == "FINISHED"){
-			
+			return (
+				<div>
+					<Scoreboard players = {this.state.players} renderScores={false}/>
+				</div>
+				)
 		}
 
 		return "you are in the game"
