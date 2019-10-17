@@ -1,8 +1,5 @@
 import React, {Component} from "react";
-import axios from 'axios';
-import {baseUrl, accessKey, refreshKey} from "../config";
-import AuthToken from 'utils/token_management'
-import { connect } from 'react-redux';
+import {login as authLogin} from 'utils/auth/verificationFunctions'
 
 import {Redirect, Route} from 'react-router';
 
@@ -16,7 +13,6 @@ class Login extends Component {
 	constructor(props){
 		super(props)
 
-		console.log('login', this.props)
 		this.state = {
 			username:"",
 			password:'party123',
@@ -35,10 +31,8 @@ class Login extends Component {
 
 	login(event){
 		console.log('LOGGING IN')
-
-
 		
-		AuthToken.request(this.state.username, this.state.password, this.props.dispatch)
+		authLogin(this.state.username, this.state.password)
 		.then(response => {
 			this.setState({redirect: true});
 		}).catch(error => {
@@ -53,7 +47,7 @@ class Login extends Component {
 		let { from } = this.props.location.state || { from: { pathname: "/" } };
 
 
-    	if (redirect) return <Redirect to={from} />;
+    	if (redirect) return <Redirect to={from.pathname} />;
 
 		return (
 			<div>
@@ -71,10 +65,4 @@ class Login extends Component {
 		 
 	}
 }
-
-const mapStoreToProps = store => store;
-const mapDispatchToProps = dispatch => ({
-    dispatch: dispatch
-});
-
-export default connect(mapStoreToProps, mapDispatchToProps)(Login);
+export default Login

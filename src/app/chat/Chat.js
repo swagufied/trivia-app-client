@@ -21,7 +21,7 @@ class Chat extends Component {
 	componentDidUpdate(prevProps){
 
 
-		if (this.props.socket.type == 'UPDATE_CHAT' && (this.state.log.length <= 0 || this.props.socket.message.date != this.state.log[this.state.log.length - 1].date)){
+		if (this.props.socket.type == 'UPDATE_CHAT' && this.props.socket.message_number != prevProps.socket.message_number){
 			this.setState(
 				{
 					log:[... this.state.log, this.props.socket.message]

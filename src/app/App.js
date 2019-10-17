@@ -1,19 +1,17 @@
 import React, { Component } from 'react';
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 
-import Room from "./Room";
+import Room from "./room/Room";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 import Error404 from "./Errors";
-
-import PrivateRoute from "./auth/AuthenticatedRoute";
-import axios from 'axios';
-import AuthToken from '../utils/tokenManagement';
+import Game from "./trivia/Game"
+import PrivateRoute from "./auth/PrivateRoute";
 
 
 import Navbar from "./Navbar";
 import { connect } from 'react-redux';
-
+import {socketBaseURL as socketURL} from 'config'
 
 
 class App extends Component {
@@ -37,7 +35,14 @@ class App extends Component {
                 <Route 
                   exact 
                   path="/trivia/room/:id" 
-                  render={(props) => (<PrivateRoute authState={auth} isSocketRoute={true} {...props}  />) } 
+                  render={(props) => (
+                    <PrivateRoute 
+                      authState={auth} 
+                      isSocketRoute={true} 
+                      component={Room} 
+                      gameComponent={Game}
+                      socketURL = {socketURL}
+                      {...props}  />) } 
                 />
 
                 

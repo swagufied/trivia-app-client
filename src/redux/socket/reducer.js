@@ -1,14 +1,16 @@
 import { actionsTypes } from './actions';
 
+let message_number = 0
 const initialState = {
     instance: null,
     loading: false,
     connected: false,
     error: null,
-    message: null,
+    message: null
 };
 
 const reducer = (state = initialState, { type, payload }) => {
+
     switch (type) {
     case actionsTypes.CONNECTING:
         return {
@@ -23,9 +25,12 @@ const reducer = (state = initialState, { type, payload }) => {
             instance: payload.instance,
         };
     case actionsTypes.MESSAGED:
-        console.log('payload received', payload)
+        // console.log('payload received', payload)
+
+        message_number++
         return {
             ...state,
+            message_number: message_number,
             message: payload.data,
             type: payload.type
         };

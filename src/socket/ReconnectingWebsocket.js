@@ -1,18 +1,41 @@
+/*
+This socket will reconnect when it is disconnected
+
+This time it takes between reconnect attempts can be set by autoReconnectInterval
+Message updates can be tracked by number
+
+to check status of socket connection, there are two boolean variables, connected and connecting
+
+to track status of messages there are two variables: error and message
+*/
 export default function WebSocketClient(){
     this.number = 0;    // Message number
     this.autoReconnectInterval = 5*1000;    // ms
+    this.type = ""
+    this.message = ""
+    this.connected = false
+    this.connecting = false
 }
 WebSocketClient.prototype.open = function(url){
+    this.connecting=true
     this.url = url;
     this.instance = new WebSocket(this.url);
-    this.instance.on('open',()=>{
-        this.onopen();
-    });
-    this.instance.on('message',(data,flags)=>{
-        this.number ++;
+    
+    this.instance.onopen =  () => {
+        this.connecting=false
+        
+        this.onopen()
+        this.connected=true
+        this.onOpenCallback()
+    }
+
+    this.instance.onmessage = (data,flags)=>{
+        this.number++;
         this.onmessage(data,flags,this.number);
-    });
-    this.instance.on('close',(e)=>{
+        this.onMessageCallback(data, flags)
+    };
+
+    this.instance.onclose = (e)=>{
         switch (e.code){
         case 1000:  // CLOSE_NORMAL
             console.log("WebSocket: closed");
@@ -22,8 +45,9 @@ WebSocketClient.prototype.open = function(url){
             break;
         }
         this.onclose(e);
-    });
-    this.instance.on('error',(e)=>{
+        this.onCloseCallback()
+    };
+    this.instance.onerror = (e)=>{
         switch (e.code){
         case 'ECONNREFUSED':
             this.reconnect(e);
@@ -32,7 +56,8 @@ WebSocketClient.prototype.open = function(url){
             this.onerror(e);
             break;
         }
-    });
+        this.onErrorCallback()
+    };
 }
 WebSocketClient.prototype.send = function(data,option){
     try{
@@ -43,25 +68,19 @@ WebSocketClient.prototype.send = function(data,option){
 }
 WebSocketClient.prototype.reconnect = function(e){
     console.log(`WebSocketClient: retry in ${this.autoReconnectInterval}ms`,e);
-        this.instance.removeAllListeners();
+        // this.instance.removeAllListeners();
     var that = this;
     setTimeout(function(){
         console.log("WebSocketClient: reconnecting...");
         that.open(that.url);
     },this.autoReconnectInterval);
 }
-WebSocketClient.prototype.onopen = function(e){ console.log("WebSocketClient: open",arguments); }
+WebSocketClient.prototype.onopen =function(e){  console.log("WebSocketClient: open",arguments); }
 WebSocketClient.prototype.onmessage = function(data,flags,number){  console.log("WebSocketClient: message",arguments);  }
 WebSocketClient.prototype.onerror = function(e){    console.log("WebSocketClient: error",arguments);    }
 WebSocketClient.prototype.onclose = function(e){    console.log("WebSocketClient: closed",arguments);   }
+WebSocketClient.prototype.onOpenCallback = function(){}
+WebSocketClient.prototype.onMessageCallback = function(){}
+WebSocketClient.prototype.onCloseCallback = function(){}
+WebSocketClient.prototype.onErrorCallback = function(){}
 
-
-// var wsc = new WebSocketClient();
-// wsc.open('wss://localhost:443/');
-// wsc.onopen = function(e){
-//     console.log("WebSocketClient connected:",e);
-//     this.send("Hello World !");
-// }
-// wsc.onmessage = function(data,flags,number){
-//     console.log(`WebSocketClient message #${number}: `,data);
-// }
